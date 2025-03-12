@@ -53,10 +53,18 @@
               );
           inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
         in
-        mkApplication {
-          venv = pythonSet.mkVirtualEnv "rkllm-cli" workspace.deps.default;
-          package = pythonSet.rkllm-cli;
-        };
+        (pkgs.buildFHSEnv {
+          name = "rkllm";
+          targetPkgs = pkgs: [
+            (pkgs.callPackage ./devenv/modules/librkllmrt.nix { })
+            (mkApplication {
+              venv = pythonSet.mkVirtualEnv "rkllm-cli" workspace.deps.default;
+              package = pythonSet.rkllm-cli;
+            })
+          ];
+          multiArch = true;
+          runScript = "rkllm";
+        });
       packages.aarch64-linux.default = self.packages.aarch64-linux.rkllm-cli;
     };
 }
