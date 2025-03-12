@@ -1,0 +1,5 @@
+.devenv*
+.pre-commit-config.yaml
+__pycache__
+devenv.local.nix
+result
