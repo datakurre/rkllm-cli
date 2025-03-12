@@ -1,5 +1,5 @@
 {
-  description = "rkllama";
+  description = "rkllm-cli";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     pyproject-nix.url = "github:pyproject-nix/pyproject.nix";
@@ -28,11 +28,11 @@
         config = {
           allowUnfree = true;
         };
-        system = "x86_64-linux";
+        system = "aarch64-linux";
       };
     in
     {
-      packages.x86_64-linux.rkllama =
+      packages.aarch64-linux.rkllm-cli =
         let
           workspace = uv2nix.lib.workspace.loadWorkspace {
             workspaceRoot = (gitignore.lib.gitignoreSource ./.).outPath;
@@ -54,9 +54,9 @@
           inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
         in
         mkApplication {
-          venv = pythonSet.mkVirtualEnv "rkllama" workspace.deps.default;
-          package = pythonSet.rkllama;
+          venv = pythonSet.mkVirtualEnv "rkllm-cli" workspace.deps.default;
+          package = pythonSet.rkllm-cli;
         };
-      packages.x86_64-linux.default = self.packages.x86_64-linux.rkllama;
+      packages.aarch64-linux.default = self.packages.aarch64-linux.rkllm-cli;
     };
 }
