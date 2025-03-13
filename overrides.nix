@@ -50,6 +50,12 @@ final: prev: {
       find $out/lib/python* -name "*.so.*" -print0|xargs -0 -Ifoo ln -sf foo $out/lib
     '';
   });
+  "nvidia-cusparselt-cu12" = prev."nvidia-cusparselt-cu12".overrideAttrs (old: {
+    postInstall = ''
+      mkdir -p $out/lib
+      find $out/lib/python* -name "*.so.*" -print0|xargs -0 -Ifoo ln -sf foo $out/lib
+    '';
+  });
   "nvidia-nccl-cu12" = prev."nvidia-nccl-cu12".overrideAttrs (old: {
     postInstall = ''
       mkdir -p $out/lib
@@ -64,14 +70,16 @@ final: prev: {
   });
   "torch" = prev."torch".overrideAttrs (old: {
     buildInputs = [
-      final."nvidia-cuda-cupti-cu12"
-      final."nvidia-cuda-nvrtc-cu12"
-      final."nvidia-cuda-runtime-cu12"
-      final."nvidia-cudnn-cu12"
-      final."nvidia-cufft-cu12"
-      final."nvidia-curand-cu12"
-      final."nvidia-nccl-cu12"
-      final."nvidia-nvtx-cu12"
+      # final."nvidia-cuda-cupti-cu12"
+      # final."nvidia-cuda-nvrtc-cu12"
+      # final."nvidia-cuda-runtime-cu12"
+      # final."nvidia-cudnn-cu12"
+      # final."nvidia-cufft-cu12"
+      # final."nvidia-curand-cu12"
+      # final."nvidia-cusparselt-cu12"
+      # final."nvidia-nccl-cu12"
+      # final."nvidia-nvtx-cu12"
+      pkgs.zlib
       pkgs.cudaPackages_11.libcusolver
       pkgs.cudaPackages_12.cuda_cudart
       pkgs.cudaPackages_12.libcublas

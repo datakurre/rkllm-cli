@@ -51,19 +51,17 @@
                   (import ./overrides.nix { pkgs = pkgs; })
                 ]
               );
+          librkllmrt = pkgs.callPackage ./devenv/modules/librkllmrt.nix { };
           inherit (pkgs.callPackages pyproject-nix.build.util { }) mkApplication;
         in
-        (pkgs.buildFHSEnv {
-          name = "rkllm";
-          targetPkgs = pkgs: [
-            (pkgs.callPackage ./devenv/modules/librkllmrt.nix { })
-            (mkApplication {
-              venv = pythonSet.mkVirtualEnv "rkllm-cli" workspace.deps.default;
-              package = pythonSet.rkllm-cli;
-            })
-          ];
-          multiArch = true;
-          runScript = "rkllm";
+        (mkApplication {
+          venv = (pythonSet.mkVirtualEnv "rkllm-cli" workspace.deps.default).overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.makeWrapper ];
+            postInstall = ''
+              wrapProgram $out/bin/python3.10 --set LIBRKLLMRT_PATH ${librkllmrt}/lib/librkllmrt.so
+            '';
+          });
+          package = pythonSet.rkllm-cli;
         });
       packages.aarch64-linux.default = self.packages.aarch64-linux.rkllm-cli;
     };

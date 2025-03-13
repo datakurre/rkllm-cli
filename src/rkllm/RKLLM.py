@@ -1,7 +1,4 @@
 # https://github.com/airockchip/rknn-llm/blob/main/examples/rkllm_server_demo/rkllm_server/flask_server.py
-from rkllm.types import PROMPT_TEXT_POSTFIX
-from rkllm.types import PROMPT_TEXT_PREFIX
-from rkllm.types import PROMPT_TOKENS
 from rkllm.types import RKLLM_Handle_t
 from rkllm.types import rkllm_lib
 from rkllm.types import RKLLMInferMode
@@ -113,7 +110,7 @@ class RKLLM:
                 self.handle, ctypes.c_char_p((prompt_cache_path).encode("utf-8"))
             )
 
-    def run(self, prompt):
+    def run(self, prompt_tokens):
         rkllm_lora_params = None
         if self.lora_model_name:
             rkllm_lora_params = RKLLMLoraParam()
@@ -131,14 +128,16 @@ class RKLLM:
         )
 
         rkllm_input = RKLLMInput()
-        rkllm_input.input_mode = RKLLMInputMode.RKLLM_INPUT_PROMPT
-        rkllm_input.input_data.prompt_input = ctypes.c_char_p(
-            (
-                PROMPT_TEXT_PREFIX.format(**PROMPT_TOKENS["qwen2"])
-                + prompt
-                + PROMPT_TEXT_POSTFIX.format(**PROMPT_TOKENS["qwen2"])
-            ).encode("utf-8")
-        )
+        rkllm_input.input_mode = RKLLMInputMode.RKLLM_INPUT_TOKEN
+
+        if prompt_tokens[-1] != 2:
+            prompt_tokens.append(2)
+
+        token_array = (ctypes.c_int * len(prompt_tokens))(*prompt_tokens)
+
+        rkllm_input.input_data.token_input.input_ids = token_array
+        rkllm_input.input_data.token_input.n_tokens = ctypes.c_ulong(len(prompt_tokens))
+
         self.rkllm_run(
             self.handle,
             ctypes.byref(rkllm_input),

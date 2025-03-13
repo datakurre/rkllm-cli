@@ -9,7 +9,9 @@ requires-python = ">= 3.10, <3.11"
 dependencies = [
     "fastapi>=0.115.11",
     "huggingface-hub>=0.29.1",
+    "pillow>=11.1.0",
     "pydantic>=2.10.6",
+    "torchvision>=0.21.0",
     "transformers>=4.49.0",
     "typer>=0.15.1",
     "uvicorn>=0.34.0",
