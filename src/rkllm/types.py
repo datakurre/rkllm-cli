@@ -15,7 +15,6 @@ class LLMCallState(ctypes.c_int):
     RKLLM_RUN_WAITING = 1
     RKLLM_RUN_FINISH = 2
     RKLLM_RUN_ERROR = 3
-    RKLLM_RUN_GET_LAST_HIDDEN_LAYER = 4
 
 
 class RKLLMInputMode(ctypes.c_int):
@@ -28,10 +27,17 @@ class RKLLMInputMode(ctypes.c_int):
 class RKLLMInferMode(ctypes.c_int):
     RKLLM_INFER_GENERATE = 0
     RKLLM_INFER_GET_LAST_HIDDEN_LAYER = 1
+    RKLLM_INFER_GET_LOGITS = 2
 
 
 class RKLLMExtendParam(ctypes.Structure):
-    _fields_ = [("base_domain_id", ctypes.c_int32), ("reserved", ctypes.c_uint8 * 112)]
+    _fields_ = [
+        ("base_domain_id", ctypes.c_int32),
+        ("embed_flash", ctypes.c_uint8),
+        ("enabled_cpus_num", ctypes.c_uint8),
+        ("enabled_cpus_mask", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint8 * 106),
+    ]
 
 
 class RKLLMParam(ctypes.Structure):
@@ -40,6 +46,7 @@ class RKLLMParam(ctypes.Structure):
         ("max_context_len", ctypes.c_int32),
         ("max_new_tokens", ctypes.c_int32),
         ("top_k", ctypes.c_int32),
+        ("n_keep", ctypes.c_int32),
         ("top_p", ctypes.c_float),
         ("temperature", ctypes.c_float),
         ("repeat_penalty", ctypes.c_float),
@@ -116,6 +123,7 @@ class RKLLMInferParam(ctypes.Structure):
         ("mode", RKLLMInferMode),
         ("lora_params", ctypes.POINTER(RKLLMLoraParam)),
         ("prompt_cache_params", ctypes.POINTER(RKLLMPromptCacheParam)),
+        ("keep_history", ctypes.c_int),
     ]
 
 
@@ -127,9 +135,18 @@ class RKLLMResultLastHiddenLayer(ctypes.Structure):
     ]
 
 
+class RKLLMResultLogits(ctypes.Structure):
+    _fields_ = [
+        ("logits", ctypes.POINTER(ctypes.c_float)),
+        ("vocab_size", ctypes.c_int),
+        ("num_tokens", ctypes.c_int),
+    ]
+
+
 class RKLLMResult(ctypes.Structure):
     _fields_ = [
         ("text", ctypes.c_char_p),
-        ("size", ctypes.c_int),
+        ("token_id", ctypes.c_int),
         ("last_hidden_layer", RKLLMResultLastHiddenLayer),
+        ("logits", RKLLMResultLogits),
     ]
